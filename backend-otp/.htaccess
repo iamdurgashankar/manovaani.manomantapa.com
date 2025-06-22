@@ -1,0 +1,28 @@
+RewriteEngine On
+
+# Handle CORS preflight requests
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# Route API calls to index.php
+RewriteRule ^send-otp/?$ index.php [QSA,L]
+RewriteRule ^verify-otp/?$ index.php [QSA,L]
+RewriteRule ^get-user/?$ index.php [QSA,L]
+RewriteRule ^update-user/?$ index.php [QSA,L]
+RewriteRule ^create-order/?$ index.php [QSA,L]
+RewriteRule ^verify-payment/?$ index.php [QSA,L]
+
+# Set security headers
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type"
+
+# Prevent direct access to .env file
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Enable error logging
+php_flag log_errors on
+php_value error_log "php_errors.log" 
