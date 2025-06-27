@@ -4,9 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
-// Update this URL to point to your cPanel PHP backend
-// Replace 'yourdomain.com' with your actual domain
-const BACKEND_URL = 'http://manovaani.manomantapa.com/backend-otp'; // Change this to your actual domain
+// Use environment variable for backend URL, fallback to current value for local/dev
+const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://manovaani.manomantapa.com/backend-otp'; // Use env var in production
 
 const AuthModal = ({ isOpen, mode, onClose }) => {
   const { signIn, signUp } = useAuth();

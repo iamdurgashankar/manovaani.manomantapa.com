@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-const BACKEND_URL = 'http://manovaani.manomantapa.com/backend-otp'; // Make sure this is correct
+// Use environment variable for backend URL, fallback to current value for local/dev
+const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://manovaani.manomantapa.com/backend-otp'; // Use env var in production
 
 const AuthContext = createContext();
 

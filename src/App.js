@@ -10,6 +10,7 @@ import SubscriptionModal from './components/SubscriptionModal';
 import Footer from './components/Footer';
 import ProfileModal from './components/ProfileModal';
 import { mediaItems } from './data/mediaItems';
+import WelcomeScreen from './components/WelcomeScreen';
 
 const AppContent = () => {
   const { isAuthenticated, isSubscribed, currentUser } = useAuth();
@@ -22,6 +23,7 @@ const AppContent = () => {
   const [authMode, setAuthMode] = useState('signin');
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   // Filter media items based on search and filter
   useEffect(() => {
@@ -107,8 +109,12 @@ const AppContent = () => {
     setIsSubscriptionModalOpen(true);
   };
 
+  if (showWelcome) {
+    return <WelcomeScreen onEnter={() => setShowWelcome(false)} />;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col animate-fadeIn">
       <Header 
         onShowSignIn={handleShowSignIn}
         onShowSignUp={handleShowSignUp}

@@ -4,7 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const BACKEND_URL = 'http://manovaani.manomantapa.com/backend-otp';
+// Use environment variable for backend URL, fallback to current value for local/dev
+const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://manovaani.manomantapa.com/backend-otp'; // Use env var in production
 const RAZORPAY_KEY_ID = 'rzp_test_L6upB708x4iE6y';
 
 const SubscriptionModal = ({ isOpen, onClose, onShowSignIn }) => {
