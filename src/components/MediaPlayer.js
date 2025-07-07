@@ -131,12 +131,7 @@ const MediaPlayer = ({ item, isOpen, onClose, onShowSubscription }) => {
                 <h3 className="text-2xl font-bold mb-2">Free Preview Ended</h3>
                 <p className="text-lg mb-4">You've watched 10 seconds of this content.</p>
                 <div className="space-y-3">
-                  <button 
-                    onClick={handleSubscribe}
-                    className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-colors font-semibold"
-                  >
-                    Subscribe to Continue
-                  </button>
+                  {/* Removed Subscribe to Continue button */}
                   <button 
                     onClick={handleMaybeLater}
                     className="text-gray-400 hover:text-white text-sm block mx-auto"

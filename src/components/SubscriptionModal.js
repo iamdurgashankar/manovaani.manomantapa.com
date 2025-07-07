@@ -45,7 +45,8 @@ const SubscriptionModal = ({ isOpen, onClose, onShowSignIn }) => {
           // 3. Verify Payment on the backend
           try {
             const verificationPayload = {
-              phone: currentUser.phone,
+              email: currentUser.email,
+              name: currentUser.name,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
               razorpay_signature: response.razorpay_signature,
@@ -66,7 +67,7 @@ const SubscriptionModal = ({ isOpen, onClose, onShowSignIn }) => {
         },
         prefill: {
           name: currentUser.name,
-          contact: currentUser.phone,
+          email: currentUser.email,
         },
         notes: {
           address: 'Manomantapa Trust',

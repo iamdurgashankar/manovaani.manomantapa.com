@@ -144,4 +144,23 @@ If you encounter issues:
 1. Check the `php_errors.log` file for detailed error messages
 2. Verify your Twilio account is active and has sufficient credits
 3. Test with a simple curl command to isolate the issue
-4. Contact your hosting provider if it's a server configuration issue 
+4. Contact your hosting provider if it's a server configuration issue
+
+# MySQL Setup (for user storage)
+
+1. Create a MySQL database and user in your hosting control panel.
+2. Run the following SQL to create the users table:
+
+```sql
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) UNIQUE,
+  name VARCHAR(255),
+  phone VARCHAR(20),
+  google_id VARCHAR(128),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+3. Copy `db.php` and fill in your database credentials.
+4. The backend will now store all users (Google, email, phone) in this table. 

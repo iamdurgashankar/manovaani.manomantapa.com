@@ -48,12 +48,6 @@ const SearchBar = ({ searchTerm, onSearchChange, activeFilter, onFilterChange, o
           >
             Audio
           </button>
-          <button 
-            onClick={onTestPopup}
-            className="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600 transition-colors"
-          >
-            Subscribe
-          </button>
         </div>
       </div>
     </div>

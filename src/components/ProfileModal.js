@@ -54,17 +54,6 @@ const ProfileModal = ({ isOpen, onClose }) => {
               className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-orange-500"
             />
           </div>
-          <div className="relative">
-            <input 
-              type="tel" 
-              name="phone"
-              placeholder="Phone Number" 
-              readOnly
-              disabled
-              value={currentUser?.phone || ''}
-              className="w-full pl-4 pr-4 py-3 border-2 border-gray-300 rounded-lg text-lg bg-gray-100 cursor-not-allowed"
-            />
-          </div>
           <button 
             type="submit" 
             disabled={loading}

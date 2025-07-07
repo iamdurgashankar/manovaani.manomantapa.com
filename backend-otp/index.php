@@ -1,14 +1,24 @@
 <?php
+// CORS: Allow only the subdomain https://manovaani.manomantapa.com
+$allowed_origins = [
+    'https://manovaani.manomantapa.com',
+];
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if ($origin && in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS, GET');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-// Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
+// Error logging
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_errors.log');
+ini_set('display_errors', 0);
 
 // Load environment variables from .env file
 function loadEnv($path) {
@@ -62,6 +72,8 @@ define('ADMIN_SECRET', 'manomantapa_secret_key'); // IMPORTANT: Change this to a
 define('RAZORPAY_KEY_ID', 'rzp_test_L6upB708x4iE6y');
 define('RAZORPAY_KEY_SECRET', 'AuQe9o7gj4dxK5mAZ1ZeoSGc');
 
+require_once __DIR__ . '/db.php';
+
 // Route handling
 if ($method === 'POST') {
     if (strpos($path, '/send-otp') !== false) {
@@ -88,27 +100,6 @@ if ($method === 'POST') {
 } else {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Method not allowed']);
-}
-
-/**
- * Read users from the JSON file
- */
-function getUsers() {
-    if (!file_exists(USERS_FILE)) {
-        return [];
-    }
-    $json = file_get_contents(USERS_FILE);
-    return json_decode($json, true);
-}
-
-/**
- * Save users to the JSON file
- */
-function saveUsers($users) {
-    $json = json_encode($users, JSON_PRETTY_PRINT);
-    if (file_put_contents(USERS_FILE, $json) === false) {
-        throw new Exception("Could not write to user data file. Please check file and directory permissions on the server.");
-    }
 }
 
 /**
@@ -225,47 +216,136 @@ function handleVerifyOtp($input, $accountSid, $authToken, $serviceSid) {
  * Handle getting user data
  */
 function handleGetUser($query) {
+    global $mysqli;
     $phone = $query['phone'] ?? '';
+    $email = $query['email'] ?? '';
+    $googleId = $query['google_id'] ?? '';
 
-    if (!$phone) {
+    if (!$phone && !$email && !$googleId) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Phone number is required.']);
+        echo json_encode(['success' => false, 'message' => 'Phone, email, or google_id is required.']);
         return;
     }
 
-    $users = getUsers();
-    if (isset($users[$phone])) {
-        echo json_encode(['success' => true, 'user' => $users[$phone]]);
+    $sql = '';
+    $param = '';
+    $type = '';
+    if ($email) {
+        $sql = 'SELECT * FROM users WHERE email = ?';
+        $param = $email;
+        $type = 's';
+    } elseif ($phone) {
+        $sql = 'SELECT * FROM users WHERE phone = ?';
+        $param = $phone;
+        $type = 's';
+    } elseif ($googleId) {
+        $sql = 'SELECT * FROM users WHERE google_id = ?';
+        $param = $googleId;
+        $type = 's';
+    }
+    $stmt = $mysqli->prepare($sql);
+    $stmt->bind_param($type, $param);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($user = $result->fetch_assoc()) {
+        echo json_encode(['success' => true, 'user' => $user]);
     } else {
         http_response_code(404);
         echo json_encode(['success' => false, 'message' => 'User not found.']);
     }
+    $stmt->close();
 }
 
 /**
  * Handle updating user data
  */
 function handleUpdateUser($input) {
+    global $mysqli;
     $phone = $input['phone'] ?? '';
+    $email = $input['email'] ?? '';
+    $googleId = $input['google_id'] ?? '';
     $name = $input['name'] ?? '';
+    $isSubscribed = isset($input['isSubscribed']) ? (bool)$input['isSubscribed'] : null;
+    $subscriptionEndDate = $input['subscriptionEndDate'] ?? null;
 
-    if (!$phone || !$name) {
+    if (!$phone && !$email && !$googleId) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Phone and name are required.']);
+        echo json_encode(['success' => false, 'message' => 'Phone, email, or google_id is required.']);
+        return;
+    }
+    if (!$name && is_null($isSubscribed) && is_null($subscriptionEndDate)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Nothing to update.']);
         return;
     }
 
-    $users = getUsers();
-    if (isset($users[$phone])) {
-        $users[$phone]['name'] = $name;
-        $users[$phone]['isSubscribed'] = $input['isSubscribed'] ?? $users[$phone]['isSubscribed'] ?? false;
-        $users[$phone]['subscriptionEndDate'] = $input['subscriptionEndDate'] ?? $users[$phone]['subscriptionEndDate'] ?? null;
-        saveUsers($users);
-        echo json_encode(['success' => true, 'user' => $users[$phone]]);
+    // Build SET clause dynamically
+    $fields = [];
+    $params = [];
+    $types = '';
+    if ($name) {
+        $fields[] = 'name = ?';
+        $params[] = $name;
+        $types .= 's';
+    }
+    if (!is_null($isSubscribed)) {
+        $fields[] = 'isSubscribed = ?';
+        $params[] = $isSubscribed;
+        $types .= 'i';
+    }
+    if (!is_null($subscriptionEndDate)) {
+        $fields[] = 'subscriptionEndDate = ?';
+        $params[] = $subscriptionEndDate;
+        $types .= 's';
+    }
+    if (empty($fields)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Nothing to update.']);
+        return;
+    }
+    $setClause = implode(', ', $fields);
+
+    // Build WHERE clause
+    if ($email) {
+        $where = 'email = ?';
+        $params[] = $email;
+        $types .= 's';
+    } elseif ($phone) {
+        $where = 'phone = ?';
+        $params[] = $phone;
+        $types .= 's';
+    } elseif ($googleId) {
+        $where = 'google_id = ?';
+        $params[] = $googleId;
+        $types .= 's';
+    }
+
+    $sql = "UPDATE users SET $setClause WHERE $where";
+    $stmt = $mysqli->prepare($sql);
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    if ($stmt->affected_rows > 0) {
+        // Fetch updated user
+        if ($email) {
+            $sel = $mysqli->prepare('SELECT * FROM users WHERE email = ?');
+            $sel->bind_param('s', $email);
+        } elseif ($phone) {
+            $sel = $mysqli->prepare('SELECT * FROM users WHERE phone = ?');
+            $sel->bind_param('s', $phone);
+        } else {
+            $sel = $mysqli->prepare('SELECT * FROM users WHERE google_id = ?');
+            $sel->bind_param('s', $googleId);
+        }
+        $sel->execute();
+        $result = $sel->get_result();
+        $user = $result->fetch_assoc();
+        echo json_encode(['success' => true, 'user' => $user]);
+        $sel->close();
     } else {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'User not found.']);
+        echo json_encode(['success' => false, 'message' => 'User not found or nothing changed.']);
     }
+    $stmt->close();
 }
 
 /**

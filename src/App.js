@@ -119,6 +119,7 @@ const AppContent = () => {
         onShowSignIn={handleShowSignIn}
         onShowSignUp={handleShowSignUp}
         onShowProfile={handleShowProfile}
+        onShowSubscribe={handleShowSubscriptionFromPlayer}
       />
       
       <SearchBar 
