@@ -13,7 +13,7 @@ import { mediaItems } from './data/mediaItems';
 import WelcomeScreen from './components/WelcomeScreen';
 
 const AppContent = () => {
-  const { isAuthenticated, isSubscribed, currentUser } = useAuth();
+  const { isAuthenticated, isSubscribed, currentUser, subscriptionPlan, watchedVideos, addWatchedVideo } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [filteredItems, setFilteredItems] = useState(mediaItems);
@@ -57,7 +57,22 @@ const AppContent = () => {
       setIsSubscriptionModalOpen(true);
       return;
     }
-    
+
+    // Enforce subscription plan limits
+    if (subscriptionPlan && subscriptionPlan !== 'unlimited') {
+      const allowed = parseInt(subscriptionPlan, 10);
+      // Only count unique, non-intro videos
+      const watchedCount = watchedVideos.length;
+      const alreadyWatched = watchedVideos.includes(item.id);
+      if (!alreadyWatched && watchedCount >= allowed) {
+        toast.error(`You have reached your limit of ${allowed} videos for this plan. Upgrade for more access!`);
+        return;
+      }
+      // Mark as watched if not already
+      if (!alreadyWatched) {
+        addWatchedVideo(item.id);
+      }
+    }
     setSelectedItem(item);
     setIsPlayerOpen(true);
   };
@@ -170,10 +185,9 @@ const AppContent = () => {
       
       <SubscriptionModal 
         isOpen={isSubscriptionModalOpen}
+        userEmail={currentUser?.email}
         onClose={handleCloseSubscriptionModal}
-        onSubscribe={handleSubscriptionSuccess}
-        onShowSignIn={handleShowSignIn}
-        onShowSignUp={handleShowSignUp}
+        onSubscribed={handleSubscriptionSuccess}
       />
 
       <ProfileModal

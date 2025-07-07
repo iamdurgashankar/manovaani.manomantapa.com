@@ -1,146 +1,113 @@
-import React, { useState } from 'react';
-import { X, CheckCircle, ArrowRight } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import React, { useState } from "react";
+import axios from "axios";
 
-// Use environment variable for backend URL, fallback to current value for local/dev
-const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://manovaani.manomantapa.com/backend-otp'; // Use env var in production
-const RAZORPAY_KEY_ID = 'rzp_test_L6upB708x4iE6y';
+const BACKEND_URL = "https://manovaani.manomantapa.com/backend-otp";
 
-const SubscriptionModal = ({ isOpen, onClose, onShowSignIn }) => {
-  const { currentUser, isAuthenticated, updateSubscriptionStatus } = useAuth();
+const planDescriptions = {
+  "2": "Access up to 2 videos. Perfect for quick learners or those who want a taste!",
+  "4": "Enjoy up to 4 videos. Great for casual viewers who want a bit more.",
+  "6": "Watch up to 6 videos. Ideal for regular users who want more content.",
+  "8": "Unlock up to 8 videos. Best for enthusiasts who love variety.",
+  "unlimited": "Unlimited access to all videos! The ultimate experience for true fans.",
+};
+
+const subscriptionPlans = [
+  { label: "2 Videos", value: "2" },
+  { label: "4 Videos", value: "4" },
+  { label: "6 Videos", value: "6" },
+  { label: "8 Videos", value: "8" },
+  { label: "Unlimited", value: "unlimited" },
+];
+
+const SubscriptionModal = ({ userEmail, onClose, onSubscribed, isOpen }) => {
+  const [selectedPlan, setSelectedPlan] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const handleSubscribe = async () => {
-    if (!isAuthenticated || !currentUser) {
-      toast.error('You must be signed in to subscribe.');
-      onShowSignIn();
-      onClose();
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // 1. Create Order on the backend
-      const orderResponse = await axios.post(`${BACKEND_URL}/create-order`, {
-        amount: 50000, // Amount in paise (e.g., 50000 = ₹500)
-      });
-
-      const { order } = orderResponse.data;
-      if (!order) {
-        throw new Error('Could not create order.');
-      }
-
-      // 2. Open Razorpay Checkout
-      const options = {
-        key: RAZORPAY_KEY_ID,
-        amount: order.amount,
-        currency: order.currency,
-        name: 'Manomantapa Subscription',
-        description: 'One Year Access',
-        order_id: order.id,
-        handler: async function (response) {
-          // 3. Verify Payment on the backend
-          try {
-            const verificationPayload = {
-              email: currentUser.email,
-              name: currentUser.name,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-            };
-            
-            const verificationResponse = await axios.post(`${BACKEND_URL}/verify-payment`, verificationPayload);
-
-            if (verificationResponse.data.success) {
-              toast.success('Subscription successful! Thank you.');
-              updateSubscriptionStatus(verificationResponse.data.user);
-              onClose();
-            } else {
-              throw new Error(verificationResponse.data.message || 'Payment verification failed.');
-            }
-          } catch (verifyError) {
-            toast.error(verifyError.message || 'Payment verification failed. Please contact support.');
-          }
-        },
-        prefill: {
-          name: currentUser.name,
-          email: currentUser.email,
-        },
-        notes: {
-          address: 'Manomantapa Trust',
-        },
-        theme: {
-          color: '#F97316',
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (response) {
-        toast.error(`Payment failed: ${response.error.description}`);
-      });
-      rzp.open();
-
-    } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Subscription failed.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  const [message, setMessage] = useState("");
   if (!isOpen) return null;
 
+  // Placeholder for payment logic
+  const handlePaymentAndSubscribe = async () => {
+    setLoading(true);
+    setMessage("");
+    try {
+      // TODO: Integrate payment gateway here (e.g., Razorpay, Stripe, etc.)
+      // If payment is successful, then proceed to subscribe:
+      const res = await axios.post(`${BACKEND_URL}/subscribe.php`, {
+        email: userEmail,
+        plan: selectedPlan,
+      });
+      if (res.data.success) {
+        setMessage("Subscription updated!");
+        if (onSubscribed) onSubscribed(selectedPlan);
+      } else {
+        setMessage(res.data.message || "Failed to subscribe.");
+      }
+    } catch (err) {
+      setMessage("Network error.");
+    }
+    setLoading(false);
+  };
+
   return (
-    <div className="auth-modal active" onClick={onClose}>
-      <div className="auth-form bg-white rounded-xl p-8 w-full max-w-lg text-center shadow-2xl mx-4" onClick={(e) => e.stopPropagation()}>
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-orange-600 mb-2">
-            Unlock Unlimited Access
-          </h2>
-          <p className="text-gray-600">
-            Join our community to enjoy all of our premium spiritual and wellness content.
-          </p>
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full relative">
+        <h1 className="text-2xl font-bold mb-6 text-center text-orange-600">
+          Choose Your Subscription Plan
+        </h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          {subscriptionPlans.map((plan) => (
+            <div
+              key={plan.value}
+              className={`border-2 rounded-xl p-6 flex flex-col items-start transition cursor-pointer bg-orange-50 hover:bg-orange-100 shadow-sm relative w-full h-full ${
+                selectedPlan === plan.value
+                  ? "border-orange-500 ring-2 ring-orange-300"
+                  : "border-gray-200"
+              }`}
+              onClick={() => setSelectedPlan(plan.value)}
+            >
+              <div className="flex items-center mb-2 w-full">
+                <span className="text-xl font-bold text-orange-700 mr-2">
+                  {plan.label}
+                </span>
+                {selectedPlan === plan.value && (
+                  <span className="ml-auto text-green-600 font-bold text-sm bg-green-100 px-2 py-1 rounded">
+                    Selected
+                  </span>
+                )}
+              </div>
+              <p className="text-gray-700 text-base mb-4">
+                {planDescriptions[plan.value]}
+              </p>
+              <button
+                className={`mt-auto w-full py-2 rounded-lg text-white font-semibold transition-all text-base ${
+                  selectedPlan === plan.value
+                    ? "bg-orange-500 hover:bg-orange-600"
+                    : "bg-gray-300 cursor-not-allowed"
+                }`}
+                disabled={selectedPlan !== plan.value || loading}
+                onClick={e => {
+                  e.stopPropagation();
+                  handlePaymentAndSubscribe();
+                }}
+              >
+                {loading && selectedPlan === plan.value
+                  ? "Processing..."
+                  : selectedPlan === plan.value
+                  ? `Subscribe to ${plan.label}`
+                  : "Select to Subscribe"}
+              </button>
+            </div>
+          ))}
         </div>
-
-        <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-6 my-6 text-left">
-          <h3 className="font-bold text-lg mb-4 text-gray-800">One Year Plan</h3>
-          <ul className="space-y-3 text-gray-700">
-            <li className="flex items-center"><CheckCircle size={18} className="text-green-500 mr-3" /> Unlimited video streaming</li>
-            <li className="flex items-center"><CheckCircle size={18} className="text-green-500 mr-3" /> Access to all audio content</li>
-            <li className="flex items-center"><CheckCircle size={18} className="text-green-500 mr-3" /> Exclusive member-only content</li>
-            <li className="flex items-center"><CheckCircle size={18} className="text-green-500 mr-3" /> Support spiritual initiatives</li>
-          </ul>
-          <div className="text-center mt-6">
-            <span className="text-4xl font-bold text-orange-600">₹500</span>
-            <span className="text-gray-600"> / year</span>
-          </div>
-        </div>
-        
+        {message && (
+          <div className="mb-2 text-center text-sm text-gray-700">{message}</div>
+        )}
         <button
-          onClick={handleSubscribe}
-          disabled={loading}
-          className="bg-orange-500 text-white w-full py-3 rounded-lg hover:bg-orange-600 transition-colors font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          className="mt-2 w-full text-gray-500 hover:text-gray-700 text-sm"
+          onClick={onClose}
         >
-          {loading ? (
-            <span>Processing...</span>
-          ) : (
-            <>
-              <span>Subscribe Now</span>
-              <ArrowRight size={20} />
-            </>
-          )}
+          Cancel
         </button>
-
-        <div className="mt-4">
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-sm"
-          >
-            Cancel
-          </button>
-        </div>
       </div>
     </div>
   );

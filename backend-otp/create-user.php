@@ -49,9 +49,12 @@ if ($user = $result->fetch_assoc()) {
 }
 $stmt->close();
 
+// Add subscription_plan to user creation
+$subscriptionPlan = $input['subscription_plan'] ?? null;
+
 // Insert new user
-$stmt = $mysqli->prepare('INSERT INTO users (email, name, google_id) VALUES (?, ?, ?)');
-$stmt->bind_param('sss', $email, $name, $googleId);
+$stmt = $mysqli->prepare('INSERT INTO users (email, name, google_id, subscription_plan) VALUES (?, ?, ?, ?)');
+$stmt->bind_param('ssss', $email, $name, $googleId, $subscriptionPlan);
 if ($stmt->execute()) {
     $userId = $stmt->insert_id;
     $user = [
@@ -59,6 +62,7 @@ if ($stmt->execute()) {
         'email' => $email,
         'name' => $name,
         'google_id' => $googleId,
+        'subscription_plan' => $subscriptionPlan,
         'created_at' => date('c')
     ];
     echo json_encode(['success' => true, 'user' => $user, 'message' => 'User created successfully.']);

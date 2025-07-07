@@ -19,6 +19,21 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [watchedVideos, setWatchedVideos] = useState(() => {
+    const saved = localStorage.getItem('manomantapa_watched_videos');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Add subscriptionPlan state
+  const [subscriptionPlan, setSubscriptionPlan] = useState(() => {
+    if (currentUser && currentUser.subscription_plan) return currentUser.subscription_plan;
+    const savedUser = localStorage.getItem('manomantapa_user');
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      return user.subscription_plan || null;
+    }
+    return null;
+  });
 
   // Check for existing user session on app load
   useEffect(() => {
@@ -37,6 +52,30 @@ export const AuthProvider = ({ children }) => {
     
     setLoading(false);
   }, []);
+
+  // When currentUser changes, update subscriptionPlan
+  useEffect(() => {
+    if (currentUser && currentUser.subscription_plan) {
+      setSubscriptionPlan(currentUser.subscription_plan);
+    }
+  }, [currentUser]);
+
+  // Track watched videos in localStorage
+  const addWatchedVideo = (videoId) => {
+    setWatchedVideos(prev => {
+      if (!prev.includes(videoId)) {
+        const updated = [...prev, videoId];
+        localStorage.setItem('manomantapa_watched_videos', JSON.stringify(updated));
+        return updated;
+      }
+      return prev;
+    });
+  };
+
+  const resetWatchedVideos = () => {
+    setWatchedVideos([]);
+    localStorage.removeItem('manomantapa_watched_videos');
+  };
 
   // Sign in with Google or Email/Password
   // userObj should be the user object from Firebase Auth (with email, name, uid, etc.)
@@ -135,6 +174,10 @@ export const AuthProvider = ({ children }) => {
     currentUser,
     isAuthenticated,
     isSubscribed,
+    subscriptionPlan,
+    watchedVideos,
+    addWatchedVideo,
+    resetWatchedVideos,
     loading,
     signIn,
     signUp,

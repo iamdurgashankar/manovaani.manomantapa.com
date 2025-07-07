@@ -1,194 +1,105 @@
-# Manomantapa Media Library - React WebApp
+# Manomantapa Media Library
 
-A modern React-based media library application for Manomantapa Trust, featuring user authentication, subscription management, and media playback with preview functionality.
+A modern React-based media library for Manomantapa Trust, featuring secure Google/email authentication, MySQL backend, and a flexible subscription system.
 
 ## 🚀 Features
-
-### Core Functionality
-- **Media Library**: Browse videos and audio content with beautiful cards
-- **Search & Filter**: Search by title/description and filter by content type
-- **User Authentication**: Sign up, sign in, and user profile management
-- **Subscription System**: Multiple subscription plans with payment integration
+- **Media Library**: Browse and play videos and audio content
+- **Search & Filter**: Find content by title, description, or type
+- **User Authentication**: Google and email/password login via Firebase
+- **Subscription System**: 5 plans (2, 4, 6, 8, unlimited videos)
 - **Preview System**: 10-second free preview for intro content
-- **Responsive Design**: Works perfectly on desktop, tablet, and mobile
+- **Responsive Design**: Works on desktop, tablet, and mobile
+- **Production-Ready Backend**: PHP + MySQL, deployed on cPanel
 
-### Technical Features
-- **React 18**: Modern React with hooks and functional components
-- **Context API**: Global state management for authentication
-- **Tailwind CSS**: Utility-first CSS framework for styling
-- **Lucide React**: Beautiful icons throughout the interface
-- **React Hot Toast**: Elegant notifications and feedback
-- **Local Storage**: Persistent user sessions and preferences
+## 🏗️ Project Structure
+```
+Manomantapa-media-page/
+├── backend-otp/           # PHP backend (MySQL, user management, subscriptions)
+├── public/
+├── src/
+│   ├── components/        # React components (UI, modals, player)
+│   ├── contexts/          # AuthContext (global auth/subscription state)
+│   ├── data/              # mediaItems.js (media content)
+│   ├── firebase.js        # Firebase config (Google/email auth)
+│   ├── App.js             # Main app logic
+│   └── index.js, index.css
+├── package.json           # Dependencies and scripts
+├── tailwind.config.js     # Tailwind CSS config
+└── README.md
+```
 
-## 📦 Installation
-
+## ⚡ Quick Start
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd manomantapa-media-app
+   cd Manomantapa-media-page
    ```
-
 2. **Install dependencies**
    ```bash
    npm install
    ```
-
-3. **Start the development server**
+3. **Configure Firebase**
+   - Update `src/firebase.js` with your Firebase project config (Google sign-in enabled).
+4. **Start the development server**
    ```bash
    npm start
    ```
+5. **Open your browser**
+   Go to [http://localhost:3000](http://localhost:3000)
 
-4. **Open your browser**
-   Navigate to `http://localhost:3000`
+## 🔑 Authentication
+- **Google Sign-In**: One-click login with Google
+- **Email/Password**: Standard email registration/login
+- **Backend**: All users are stored in MySQL (see backend-otp/)
+- **No phone/OTP**: All phone/Twilio logic has been removed
 
-## 🏗️ Project Structure
+## 💳 Subscription System
+- **Plans**: 2, 4, 6, 8, or unlimited videos
+- **Modal**: User-friendly modal appears only when user clicks 'Subscribe' after login
+- **Limits**: Watched videos tracked per user/plan
+- **Upgrade**: Users can upgrade at any time
+- **Payment**: Payment logic is ready for integration (see below)
 
-```
-src/
-├── components/          # React components
-│   ├── Header.js       # Navigation and auth buttons
-│   ├── SearchBar.js    # Search and filter functionality
-│   ├── MediaCard.js    # Individual media item cards
-│   ├── MediaPlayer.js  # Video/audio player with preview logic
-│   ├── AuthModal.js    # Sign in/sign up forms
-│   ├── SubscriptionModal.js # Subscription plans and payment
-│   └── Footer.js       # Contact information and links
-├── contexts/           # React contexts
-│   └── AuthContext.js  # Authentication state management
-├── data/              # Static data
-│   └── mediaItems.js  # Media content and subscription plans
-├── App.js             # Main application component
-├── index.js           # React entry point
-└── index.css          # Global styles and Tailwind imports
-```
+## 🛠️ Payment Integration
+- The code includes a placeholder for payment gateway integration (e.g., Razorpay, Stripe) in `SubscriptionModal.js`.
+- To enable payments, add your payment logic in the `handlePaymentAndSubscribe` function.
 
-## 🔧 Configuration
+## 🗄️ Backend (PHP + MySQL)
+- **Location**: `backend-otp/` (see `README-PHP.md` for setup)
+- **Endpoints**: `/get-user`, `/create-user.php`, `/update-user`, `/subscribe.php`
+- **CORS**: Configured for production domain only
+- **Database**: MySQL table for users and subscriptions
+- **Deployment**: Upload to cPanel, configure database, set permissions
 
-### Environment Variables
-Create a `.env` file in the root directory for any API keys or configuration:
+## 📦 Main Dependencies
+- **React 18**
+- **Firebase** (auth)
+- **Axios** (API requests)
+- **Tailwind CSS** (styling)
+- **Lucide React** (icons)
+- **React Hot Toast** (notifications)
+- **react-youtube** (video player)
 
-```env
-REACT_APP_API_URL=your_api_url_here
-REACT_APP_FIREBASE_CONFIG=your_firebase_config
-```
+## 📜 Scripts
+- `npm start` — Start development server
+- `npm run build` — Build for production
+- `npm test` — Run tests
+- `npm run eject` — Eject from Create React App
 
-### Customization
-- **Media Content**: Edit `src/data/mediaItems.js` to add/remove content
-- **Subscription Plans**: Modify subscription plans in the same file
-- **Styling**: Customize colors and themes in `tailwind.config.js`
-- **Authentication**: Replace the mock auth in `AuthContext.js` with real backend integration
-
-## 🎯 Usage
-
-### For Users
-1. **Browse Content**: View all available videos and audio
-2. **Free Preview**: Watch intro content for 10 seconds
-3. **Sign Up**: Create an account to access premium content
-4. **Subscribe**: Choose a subscription plan to unlock full access
-5. **Search & Filter**: Find specific content using search and filters
-
-### For Developers
-1. **Add Content**: Add new media items to `mediaItems.js`
-2. **Customize UI**: Modify components in the `components/` directory
-3. **Extend Features**: Add new functionality using React patterns
-4. **Backend Integration**: Replace mock auth with real authentication
-
-## 🔒 Authentication & Security
-
-### Current Implementation
-- **Local Storage**: User sessions persist across browser sessions
-- **Mock Authentication**: Simulated login/signup for demo purposes
-- **Subscription State**: Tracks subscription status locally
-
-### Production Recommendations
-- **Backend API**: Implement proper user authentication
-- **JWT Tokens**: Secure token-based authentication
-- **Database**: Store user data and subscription information
-- **Payment Gateway**: Integrate with Stripe, PayPal, or similar
-- **HTTPS**: Ensure secure connections in production
-
-## 📱 Responsive Design
-
-The application is fully responsive and optimized for:
-- **Desktop**: Full-featured experience with grid layouts
-- **Tablet**: Adaptive layouts with touch-friendly interactions
-- **Mobile**: Mobile-first design with optimized navigation
-
-## 🎨 Customization
-
-### Colors
-The app uses a custom orange theme. To change colors:
-1. Edit `tailwind.config.js` color definitions
-2. Update component classes to use new colors
-3. Modify CSS variables in `index.css`
-
-### Content
-To add or modify media content:
-1. Edit `src/data/mediaItems.js`
-2. Add new items following the existing structure
-3. Update subscription plans as needed
-
-### Styling
-- **Tailwind CSS**: Use utility classes for styling
-- **Custom CSS**: Add custom styles in `index.css`
-- **Component Styling**: Style individual components as needed
+## 📝 Customization
+- **Media Content**: Edit `src/data/mediaItems.js`
+- **Subscription Plans**: Edit `SubscriptionModal.js` for plan options
+- **Styling**: Update `tailwind.config.js` and component classes
 
 ## 🚀 Deployment
+- **Frontend**: Build and deploy with Netlify, Vercel, Firebase Hosting, or cPanel static hosting
+- **Backend**: Deploy PHP files to cPanel, configure MySQL, set CORS for your domain
+- See `DEPLOYMENT.md` for detailed instructions
 
-### Build for Production
-```bash
-npm run build
-```
-
-### Deploy Options
-- **Netlify**: Drag and drop the `build` folder
-- **Vercel**: Connect your GitHub repository
-- **AWS S3**: Upload build files to S3 bucket
-- **Firebase Hosting**: Deploy using Firebase CLI
-
-## 🔧 Development
-
-### Available Scripts
-- `npm start`: Start development server
-- `npm run build`: Build for production
-- `npm test`: Run test suite
-- `npm run eject`: Eject from Create React App
-
-### Code Style
-- **ESLint**: Configured for React best practices
-- **Prettier**: Code formatting (recommended)
-- **Components**: Functional components with hooks
-- **Props**: Use prop-types for type checking
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 📞 Support
-
-For support and questions:
-- **Phone**: 9481087324
+## 🤝 Support & Contact
 - **Email**: Manomantapa2008@gmail.com
+- **Phone**: 9481087324
 - **Organization**: Manomantapa Trust (R)
 
-## 🔮 Future Enhancements
-
-- **Real-time Features**: Live streaming and chat
-- **Advanced Analytics**: User behavior tracking
-- **Content Management**: Admin panel for content management
-- **Mobile App**: React Native companion app
-- **Offline Support**: Service workers for offline viewing
-- **Social Features**: Comments, likes, and sharing
-- **AI Recommendations**: Personalized content suggestions
-
 ---
-
 **Built with ❤️ for Manomantapa Trust** 
