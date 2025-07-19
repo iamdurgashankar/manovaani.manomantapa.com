@@ -2,6 +2,7 @@
 // CORS: Allow only the subdomain https://manovaani.manomantapa.com
 $allowed_origins = [
     'https://manovaani.manomantapa.com',
+    'http://localhost:3000', // Allow React dev server
 ];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if ($origin && in_array($origin, $allowed_origins)) {

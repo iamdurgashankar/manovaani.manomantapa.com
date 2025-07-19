@@ -1,8 +1,15 @@
 <?php
-$host = 'localhost'; // Usually 'localhost' on cPanel
-$db   = 'i10163703_teb51'; // Your full database name
-$user = 'i10163703_teb51'; // Your full database username
-$pass = 'Manasiri-EST@2023';      // The password you set in cPanel
+// Production credentials for deployment:
+$host = 'localhost';
+$db   = 'i10163703_teb51';
+$user = 'i10163703_teb51';
+$pass = 'Manasiri-EST@2023';
+
+// For local development, comment out the above and use:
+// $host = '127.0.0.1';
+// $db   = 'i10163703_teb51';
+// $user = 'root';
+// $pass = '';
 
 $mysqli = new mysqli($host, $user, $pass, $db);
 
