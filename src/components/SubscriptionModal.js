@@ -4,11 +4,12 @@ import axios from "axios";
 const BACKEND_URL = "https://manovaani.manomantapa.com/backend-otp";
 
 const planDescriptions = {
-  "2": "Access up to 2 videos. Perfect for quick learners or those who want a taste!",
-  "4": "Enjoy up to 4 videos. Great for casual viewers who want a bit more.",
-  "6": "Watch up to 6 videos. Ideal for regular users who want more content.",
-  "8": "Unlock up to 8 videos. Best for enthusiasts who love variety.",
-  "unlimited": "Unlimited access to all videos! The ultimate experience for true fans.",
+  2: "Access up to 2 videos. Perfect for quick learners or those who want a taste!",
+  4: "Enjoy up to 4 videos. Great for casual viewers who want a bit more.",
+  6: "Watch up to 6 videos. Ideal for regular users who want more content.",
+  8: "Unlock up to 8 videos. Best for enthusiasts who love variety.",
+  unlimited:
+    "Unlimited access to all videos! The ultimate experience for true fans.",
 };
 
 const subscriptionPlans = [
@@ -30,18 +31,54 @@ const SubscriptionModal = ({ userEmail, onClose, onSubscribed, isOpen }) => {
     setLoading(true);
     setMessage("");
     try {
-      // TODO: Integrate payment gateway here (e.g., Razorpay, Stripe, etc.)
-      // If payment is successful, then proceed to subscribe:
-      const res = await axios.post(`${BACKEND_URL}/subscribe.php`, {
+      // 1. Create an order on your backend (amount in paise, e.g., 50000 = ₹500)
+      const orderRes = await axios.post(`${BACKEND_URL}/create-order`, {
+        amount: 50000, // Set your plan price here
         email: userEmail,
         plan: selectedPlan,
       });
-      if (res.data.success) {
-        setMessage("Subscription updated!");
-        if (onSubscribed) onSubscribed(selectedPlan);
-      } else {
-        setMessage(res.data.message || "Failed to subscribe.");
-      }
+      const { order } = orderRes.data;
+
+      // 2. Open Razorpay checkout
+      const options = {
+        key: "YOUR_RAZORPAY_KEY_ID", // TODO: Replace with your Razorpay Key ID
+        amount: order.amount,
+        currency: order.currency,
+        name: "Manomantapa Media",
+        description: `Subscribe to ${selectedPlan} plan`,
+        order_id: order.id,
+        handler: async function (response) {
+          // 3. On payment success, verify payment and update subscription
+          try {
+            const verifyRes = await axios.post(
+              `${BACKEND_URL}/verify-payment`,
+              {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                email: userEmail,
+                plan: selectedPlan,
+              }
+            );
+            if (verifyRes.data.success) {
+              setMessage("Subscription updated!");
+              if (onSubscribed) onSubscribed(selectedPlan);
+            } else {
+              setMessage("Payment verification failed.");
+            }
+          } catch (err) {
+            setMessage("Payment verification failed.");
+          }
+        },
+        prefill: {
+          email: userEmail,
+        },
+        theme: {
+          color: "#F37254",
+        },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (err) {
       setMessage("Network error.");
     }
@@ -85,7 +122,7 @@ const SubscriptionModal = ({ userEmail, onClose, onSubscribed, isOpen }) => {
                     : "bg-gray-300 cursor-not-allowed"
                 }`}
                 disabled={selectedPlan !== plan.value || loading}
-                onClick={e => {
+                onClick={(e) => {
                   e.stopPropagation();
                   handlePaymentAndSubscribe();
                 }}
@@ -100,7 +137,9 @@ const SubscriptionModal = ({ userEmail, onClose, onSubscribed, isOpen }) => {
           ))}
         </div>
         {message && (
-          <div className="mb-2 text-center text-sm text-gray-700">{message}</div>
+          <div className="mb-2 text-center text-sm text-gray-700">
+            {message}
+          </div>
         )}
         <button
           className="mt-2 w-full text-gray-500 hover:text-gray-700 text-sm"
@@ -113,4 +152,4 @@ const SubscriptionModal = ({ userEmail, onClose, onSubscribed, isOpen }) => {
   );
 };
 
-export default SubscriptionModal; 
+export default SubscriptionModal;

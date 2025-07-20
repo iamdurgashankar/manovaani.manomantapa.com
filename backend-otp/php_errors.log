@@ -50,3 +50,39 @@ Stack trace:
 #1 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/index.php(66): handleGetUser(Array)
 #2 {main}
   thrown in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/index.php on line 298
+[20-Jul-2025 12:02:52 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Access denied for user 'i10163703_teb51'@'localhost' (using password: YES) in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php:14
+Stack trace:
+#0 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php(14): mysqli->__construct('localhost', 'i10163703_teb51', Object(SensitiveParameterValue), 'i10163703_teb51')
+#1 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/index.php(45): require_once('/Users/durgasha...')
+#2 {main}
+  thrown in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php on line 14
+[20-Jul-2025 12:19:35 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Access denied for user 'i10163703_teb51'@'localhost' (using password: YES) in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php:14
+Stack trace:
+#0 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php(14): mysqli->__construct('localhost', 'i10163703_teb51', Object(SensitiveParameterValue), 'i10163703_teb51')
+#1 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/index.php(45): require_once('/Users/durgasha...')
+#2 {main}
+  thrown in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php on line 14
+[20-Jul-2025 12:21:58 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Access denied for user 'i10163703_teb51'@'localhost' (using password: YES) in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php:14
+Stack trace:
+#0 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php(14): mysqli->__construct('localhost', 'i10163703_teb51', Object(SensitiveParameterValue), 'i10163703_teb51')
+#1 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/index.php(45): require_once('/Users/durgasha...')
+#2 {main}
+  thrown in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php on line 14
+[20-Jul-2025 12:29:07 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Access denied for user 'i10163703_teb51'@'localhost' (using password: YES) in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php:14
+Stack trace:
+#0 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php(14): mysqli->__construct('localhost', 'i10163703_teb51', Object(SensitiveParameterValue), 'i10163703_teb51')
+#1 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/index.php(46): require_once('/Users/durgasha...')
+#2 {main}
+  thrown in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php on line 14
+[20-Jul-2025 12:38:29 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Access denied for user 'i10163703_teb51'@'localhost' (using password: YES) in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php:8
+Stack trace:
+#0 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php(8): mysqli->__construct('localhost', 'i10163703_teb51', Object(SensitiveParameterValue), 'i10163703_teb51')
+#1 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/index.php(46): require_once('/Users/durgasha...')
+#2 {main}
+  thrown in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php on line 8
+[20-Jul-2025 12:53:31 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Host '223.185.133.217' is not allowed to connect to this MariaDB server in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php:8
+Stack trace:
+#0 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php(8): mysqli->__construct('118.139.183.156', 'i10163703_teb51', Object(SensitiveParameterValue), 'i10163703_teb51')
+#1 /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/index.php(46): require_once('/Users/durgasha...')
+#2 {main}
+  thrown in /Users/durgashankardasmangaraj/Downloads/manovaani.manomantapa.com/backend-otp/db.php on line 8

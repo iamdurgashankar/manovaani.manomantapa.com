@@ -2,6 +2,7 @@
 // CORS: Allow only the subdomain https://manovaani.manomantapa.com
 $allowed_origins = [
     'https://manovaani.manomantapa.com',
+    'http://localhost:3000', // Allow React dev server for local development
 ];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if ($origin && in_array($origin, $allowed_origins)) {
@@ -48,6 +49,9 @@ $input = json_decode(file_get_contents('php://input'), true);
 $method = $_SERVER['REQUEST_METHOD'];
 $path = $_SERVER['REQUEST_URI'];
 $path = parse_url($path, PHP_URL_PATH);
+
+// Remove isAdmin function and all /add-category, /add-video, /categories, /videos endpoints
+// Only keep /get-user, /update-user, /create-order, /verify-payment, and user-related logic
 
 if ($method === 'POST') {
     if (strpos($path, '/update-user') !== false) {
@@ -190,19 +194,21 @@ function handleCreateOrder($input) {
  * Handle verifying a Razorpay payment
  */
 function handleVerifyPayment($input) {
-    $phone = $input['phone'] ?? '';
+    global $mysqli;
+    $email = $input['email'] ?? '';
+    $plan = $input['plan'] ?? '';
     $razorpayPaymentId = $input['razorpay_payment_id'] ?? '';
     $razorpayOrderId = $input['razorpay_order_id'] ?? '';
     $razorpaySignature = $input['razorpay_signature'] ?? '';
 
-    if (!$phone || !$razorpayPaymentId || !$razorpayOrderId || !$razorpaySignature) {
+    if (!$email || !$plan || !$razorpayPaymentId || !$razorpayOrderId || !$razorpaySignature) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Missing payment verification details.']);
         return;
     }
 
     // Verify the signature
-    $generated_signature = hash_hmac('sha256', $razorpayOrderId . "|" . $razorpayPaymentId, RAZORPAY_KEY_SECRET);
+    $generated_signature = hash_hmac('sha256', $razorpayOrderId . '|' . $razorpayPaymentId, RAZORPAY_KEY_SECRET);
 
     if ($generated_signature !== $razorpaySignature) {
         http_response_code(400);
@@ -210,20 +216,17 @@ function handleVerifyPayment($input) {
         return;
     }
 
-    // Signature is correct, update user subscription status
-    $users = getUsers();
-    if (isset($users[$phone])) {
-        $users[$phone]['isSubscribed'] = true;
-        $users[$phone]['subscriptionEndDate'] = date('c', strtotime('+1 year')); // Subscription valid for 1 year
-        $users[$phone]['razorpayOrderId'] = $razorpayOrderId;
-        $users[$phone]['razorpayPaymentId'] = $razorpayPaymentId;
-        saveUsers($users);
-
-        echo json_encode(['success' => true, 'message' => 'Payment verified successfully.', 'user' => $users[$phone]]);
+    // Signature is correct, update user subscription status in the database
+    $subscriptionEndDate = date('Y-m-d', strtotime('+1 year'));
+    $stmt = $mysqli->prepare('UPDATE users SET subscription_plan = ?, razorpayOrderId = ?, razorpayPaymentId = ?, subscriptionEndDate = ? WHERE email = ?');
+    $stmt->bind_param('sssss', $plan, $razorpayOrderId, $razorpayPaymentId, $subscriptionEndDate, $email);
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Payment verified and subscription updated.']);
     } else {
-        http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'User not found for subscription update.']);
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Failed to update subscription in database.']);
     }
+    $stmt->close();
 }
 
 /**
